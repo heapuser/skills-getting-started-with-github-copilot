@@ -148,6 +148,29 @@ document.addEventListener("DOMContentLoaded", () => {
             span.className = 'participant-badge';
             span.textContent = p;
             li.appendChild(span);
+
+            // Add delete icon
+            const delBtn = document.createElement('button');
+            delBtn.className = 'delete-participant-btn';
+            delBtn.title = 'Remove participant';
+            delBtn.innerHTML = '🗑️';
+            delBtn.style.marginLeft = '6px';
+            delBtn.onclick = async (e) => {
+              e.preventDefault();
+              if (!confirm(`Remove ${p} from ${name}?`)) return;
+              try {
+                const res = await fetch(`/activities/${encodeURIComponent(name)}/unregister?email=${encodeURIComponent(p)}`, {
+                  method: 'DELETE'
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Failed to remove participant');
+                showMessage(data.message, 'success');
+                await loadActivities();
+              } catch (err) {
+                showMessage(err.message || 'Failed to remove participant', 'error');
+              }
+            };
+            li.appendChild(delBtn);
             ul.appendChild(li);
           });
         }
